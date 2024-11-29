@@ -1,0 +1,82 @@
+-- Tạo công cụ "Biến Hình"
+local tool = Instance.new("Tool")
+tool.RequiresHandle = false
+tool.Name = "Biến Hình"
+tool.Parent = game.Players.LocalPlayer.Backpack
+
+-- Hàm chạy animation
+local function playTransformationAnimation()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Kiểm tra Humanoid và Animator
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+
+        -- Tạo animation
+        local animation = Instance.new("Animation")
+        animation.AnimationId = "rbxassetid://658832070" -- ID của animation Goku biến hình
+        local track = animator:LoadAnimation(animation)
+
+        -- Phát animation
+        track:Play()
+        print("Animation Goku biến hình đã được kích hoạt!")
+    else
+        warn("Không tìm thấy Humanoid trong nhân vật!")
+    end
+end
+
+-- Hàm tạo ánh sáng không lan ra đất
+local function createGlowEffect(character)
+    -- Xóa ánh sáng cũ nếu có
+    if character:FindFirstChild("GlowEffect") then
+        character.GlowEffect:Destroy()
+    end
+
+    -- Tạo Attachment để gắn ánh sáng
+    local attachment = Instance.new("Attachment")
+    attachment.Name = "GlowEffect"
+    attachment.Parent = character:FindFirstChild("HumanoidRootPart")
+
+    -- Tạo ánh sáng (PointLight)
+    local light = Instance.new("PointLight")
+    light.Name = "AuraLight"
+    light.Color = Color3.new(1, 0.7, 0) -- Màu cam vàng
+    light.Brightness = 10 -- Độ sáng mạnh
+    light.Range = 10 -- Phạm vi ánh sáng
+    light.Shadows = true -- Bật đổ bóng
+    light.Parent = attachment
+
+    -- Tạo ParticleEmitter (Hiệu ứng hạt)
+    local aura = Instance.new("ParticleEmitter")
+    aura.Texture = "rbxassetid://263841750" -- Texture ánh sáng (có thể thay đổi)
+    aura.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.new(1, 0.7, 0)), -- Cam vàng
+        ColorSequenceKeypoint.new(1, Color3.new(1, 1, 0)) -- Vàng sáng
+    }
+    aura.Size = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 2), -- Kích thước ban đầu
+        NumberSequenceKeypoint.new(1, 4) -- Kích thước kết thúc
+    }
+    aura.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0.4), -- Hơi trong suốt lúc đầu
+        NumberSequenceKeypoint.new(1, 1) -- Trong suốt hoàn toàn
+    }
+    aura.Lifetime = NumberRange.new(0.8, 1.2) -- Thời gian tồn tại của hạt
+    aura.Rate = 30 -- Tần suất phát hạt
+    aura.Speed = NumberRange.new(1, 3) -- Tốc độ hạt
+    aura.Parent = attachment
+end
+
+-- Tích hợp ánh sáng và animation khi biến hình
+tool.Activated:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        createGlowEffect(character) -- Kích hoạt ánh sáng
+    end
+
+    playTransformationAnimation() -- Chạy animation
+end)
