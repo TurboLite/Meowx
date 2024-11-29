@@ -1,0 +1,86 @@
+-- Tạo công cụ "Biến Hình"
+local tool = Instance.new("Tool")
+tool.RequiresHandle = false
+tool.Name = "Biến Hình"
+tool.Parent = game.Players.LocalPlayer.Backpack
+
+-- Hàm chạy animation
+local function playTransformationAnimation()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Kiểm tra Humanoid và Animator
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+
+        -- Tạo animation
+        local animation = Instance.new("Animation")
+        animation.AnimationId = "rbxassetid://658832070" -- ID của animation Goku biến hình
+        local track = animator:LoadAnimation(animation)
+
+        -- Phát animation
+        track:Play()
+        print("Animation Goku biến hình đã được kích hoạt!")
+    else
+        warn("Không tìm thấy Humanoid trong nhân vật!")
+    end
+end
+
+-- Hàm tạo hiệu ứng aura bao quanh nhân vật (hình tròn với hiệu ứng lửa)
+local function createAuraEffect(character)
+    -- Kiểm tra nếu aura đã tồn tại, xóa đi
+    if character:FindFirstChild("AuraEffect") then
+        character.AuraEffect:Destroy()
+    end
+
+    -- Tạo Part dạng hình tròn bao quanh nhân vật
+    local auraPart = Instance.new("Part")
+    auraPart.Name = "AuraEffect"
+    auraPart.Shape = Enum.PartType.Ball
+    auraPart.Size = Vector3.new(10, 10, 10) -- Kích thước vòng aura (tạo hình tròn)
+    auraPart.Anchored = true
+    auraPart.CanCollide = false
+    auraPart.Material = Enum.Material.Neon
+    auraPart.Color = Color3.fromRGB(255, 255, 255) -- Màu trắng trong suốt cho aura (có thể điều chỉnh)
+    auraPart.Parent = character
+
+    -- Tạo hiệu ứng ánh sáng (PointLight) bên trong aura
+    local light = Instance.new("PointLight")
+    light.Color = Color3.fromRGB(255, 255, 255) -- Ánh sáng trắng
+    light.Brightness = 1 -- Độ sáng giảm
+    light.Range = 10 -- Phạm vi ánh sáng
+    light.Parent = auraPart
+
+    -- Tạo ParticleEmitter cho hiệu ứng lửa
+    local fireEmitter = Instance.new("ParticleEmitter")
+    fireEmitter.Parent = auraPart
+    fireEmitter.Texture = "http://www.robloxlabs.com/roblox-studio/images/fire_particle.png" -- Hình ảnh của lửa (bạn có thể thay đổi)
+    fireEmitter.Lifetime = NumberRange.new(1, 2) -- Thời gian sống của các hạt lửa
+    fireEmitter.Rate = 30 -- Tỷ lệ phát hạt lửa
+    fireEmitter.Size = NumberSequence.new(0.5, 1) -- Kích thước hạt lửa
+    fireEmitter.Speed = NumberRange.new(10, 20) -- Tốc độ di chuyển của hạt lửa
+    fireEmitter.Rotation = NumberRange.new(0, 360) -- Độ xoay của các hạt lửa
+    fireEmitter.Color = ColorSequence.new(Color3.fromRGB(255, 140, 0), Color3.fromRGB(255, 0, 0)) -- Màu của hạt lửa (cam, đỏ)
+    fireEmitter.EmissionDirection = Enum.NormalId.Top -- Hướng phát ra của hạt lửa
+
+    -- Cập nhật vị trí của aura theo HumanoidRootPart
+    local runService = game:GetService("RunService")
+    runService.Heartbeat:Connect(function()
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            auraPart.Position = character.HumanoidRootPart.Position
+        end
+    end)
+end
+
+-- Tích hợp ánh sáng và animation khi biến hình
+tool.Activated:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        createAuraEffect(character) -- Kích hoạt aura (hình tròn với hiệu ứng lửa)
+    end
+
+    playTransformationAnimation() -- Chạy animation biến hình
+end)
