@@ -1,0 +1,74 @@
+-- Tạo công cụ "Biến Hình"
+local tool = Instance.new("Tool")
+tool.RequiresHandle = false
+tool.Name = "Biến Hình"
+tool.Parent = game.Players.LocalPlayer.Backpack
+
+-- Hàm chạy animation
+local function playTransformationAnimation()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    -- Kiểm tra Humanoid và Animator
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+
+        -- Tạo animation
+        local animation = Instance.new("Animation")
+        animation.AnimationId = "rbxassetid://658832070" -- ID của animation Goku biến hình
+        local track = animator:LoadAnimation(animation)
+
+        -- Phát animation
+        track:Play()
+        print("Animation Goku biến hình đã được kích hoạt!")
+    else
+        warn("Không tìm thấy Humanoid trong nhân vật!")
+    end
+end
+
+-- Hàm tạo hiệu ứng aura bao quanh nhân vật (hình tròn)
+local function createAuraEffect(character)
+    -- Kiểm tra nếu aura đã tồn tại, xóa đi
+    if character:FindFirstChild("AuraEffect") then
+        character.AuraEffect:Destroy()
+    end
+
+    -- Tạo Part dạng hình tròn bao quanh nhân vật
+    local auraPart = Instance.new("Part")
+    auraPart.Name = "AuraEffect"
+    auraPart.Shape = Enum.PartType.Ball
+    auraPart.Size = Vector3.new(10, 10, 10) -- Kích thước vòng aura (tạo hình tròn)
+    auraPart.Anchored = true
+    auraPart.CanCollide = false
+    auraPart.Material = Enum.Material.Neon
+    auraPart.Color = Color3.fromRGB(255, 255, 255) -- Màu trắng trong suốt cho aura (có thể điều chỉnh)
+    auraPart.Parent = character
+
+    -- Tạo hiệu ứng ánh sáng (PointLight) bên trong aura
+    local light = Instance.new("PointLight")
+    light.Color = Color3.fromRGB(255, 255, 255) -- Ánh sáng trắng
+    light.Brightness = 2 -- Độ sáng giảm
+    light.Range = 8 -- Phạm vi ánh sáng giảm
+    light.Parent = auraPart
+
+    -- Cập nhật vị trí của aura theo HumanoidRootPart
+    local runService = game:GetService("RunService")
+    runService.Heartbeat:Connect(function()
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            auraPart.Position = character.HumanoidRootPart.Position
+        end
+    end)
+end
+
+-- Tích hợp ánh sáng và animation khi biến hình
+tool.Activated:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        createAuraEffect(character) -- Kích hoạt aura (hình tròn)
+    end
+
+    playTransformationAnimation() -- Chạy animation biến hình
+end)
