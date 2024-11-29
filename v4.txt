@@ -1,0 +1,92 @@
+-- Tạo công cụ "Bật"
+local tool = Instance.new("Tool")
+tool.RequiresHandle = false
+tool.Name = "Bật"
+tool.Parent = game.Players.LocalPlayer.Backpack
+
+-- Biến khởi tạo
+local RunService = game:GetService("RunService")
+
+-- Hàm tạo hiệu ứng vòng sáng quanh nhân vật
+local function createAura(character)
+    -- Xóa hiệu ứng cũ nếu có
+    if character:FindFirstChild("FakeAura") then
+        character.FakeAura:Destroy()
+    end
+
+    -- Tạo hiệu ứng vòng sáng
+    local aura = Instance.new("Part")
+    aura.Name = "FakeAura"
+    aura.Shape = Enum.PartType.Ball
+    aura.Material = Enum.Material.ForceField
+    aura.Size = Vector3.new(10, 10, 10)
+    aura.Color = Color3.new(1, 0, 0) -- Màu đỏ
+    aura.Anchored = true
+    aura.CanCollide = false
+    aura.Transparency = 0.5
+    aura.Parent = character
+
+    -- Liên tục di chuyển vòng sáng theo nhân vật
+    RunService.RenderStepped:Connect(function()
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            aura.CFrame = character.HumanoidRootPart.CFrame
+        else
+            aura:Destroy()
+        end
+    end)
+end
+
+-- Hàm tạo hiệu ứng ánh sáng trên nhân vật
+local function createGlowEffect(character)
+    -- Xóa hiệu ứng cũ nếu có
+    if character:FindFirstChild("FakeGlow") then
+        character.FakeGlow:Destroy()
+    end
+
+    -- Tạo ánh sáng
+    local light = Instance.new("PointLight")
+    light.Name = "FakeGlow"
+    light.Color = Color3.new(1, 1, 0) -- Màu vàng
+    light.Brightness = 5
+    light.Range = 15
+    light.Parent = character:FindFirstChild("HumanoidRootPart")
+end
+
+-- Hàm kích hoạt hiệu ứng V4
+local function activateFakeV4()
+    local LocalPlayer = game.Players.LocalPlayer
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        warn("Không tìm thấy nhân vật!")
+        return
+    end
+
+    local character = LocalPlayer.Character
+
+    -- Tạo hiệu ứng giả lập tộc V4
+    createAura(character)
+    createGlowEffect(character)
+
+    -- Hiệu ứng dòng thông báo trên đầu nhân vật
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "FakeV4Title"
+    billboardGui.Size = UDim2.new(0, 200, 0, 50)
+    billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+    billboardGui.Adornee = character:FindFirstChild("HumanoidRootPart")
+    billboardGui.Parent = character
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 1, 0)
+    title.BackgroundTransparency = 1
+    title.Text = "V4 Activated!" -- Tiêu đề tộc V4
+    title.TextColor3 = Color3.new(1, 1, 0)
+    title.Font = Enum.Font.Fantasy
+    title.TextScaled = true
+    title.Parent = billboardGui
+
+    print("Tộc V4 giả lập đã được kích hoạt!")
+end
+
+-- Kết nối sự kiện khi công cụ được sử dụng
+tool.Activated:Connect(function()
+    activateFakeV4()
+end)
